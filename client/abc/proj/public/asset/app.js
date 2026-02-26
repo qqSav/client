@@ -7569,7 +7569,7 @@ var Game = ((modules) => {
                             }, 5000);
                             let network = new game.networkType();
                             network.emitter.removeListener("PACKET_BLEND", network.emitter._events.PACKET_BLEND);
-                            let ws = new WebSocket("wss://" + game.options.servers[serverKeys[scannerId]].hostname + ":443");
+                            let ws = new WebSocket("wss://" + game.options.servers[serverKeys[scannerId]].host + ":443");
                             ws.binaryType = "arraybuffer";
                             ws.codec = new BinCodec();
                             ws.serverId = serverKeys[scannerId];

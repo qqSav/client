@@ -1232,6 +1232,52 @@ class Script {
             }
             this.setElementToggleTo(this.session.as, "Z10");
         }
+        this.getElement("Z12")[0].onclick = () => {
+            let altId = this.getElement("Z11")[0].value;
+            if (sockets[altId]) {
+                sockets[altId].isOnControl = true;
+                game.ui.components.PopupOverlay.showHint("Alt " + altId + " controlled!");
+            }
+        }
+        this.getElement("Z13")[0].onclick = () => {
+            let altId = this.getElement("Z11")[0].value;
+            if (sockets[altId]) {
+                sockets[altId].isOnControl = false;
+                sockets[altId].sendPacket(3, { up: 0, left: 0, down: 0, right: 0 });
+                game.ui.components.PopupOverlay.showHint("Alt " + altId + " uncontrolled!");
+            }
+        }
+        this.getElement("Z14")[0].onclick = () => {
+            for (let i in sockets) {
+                sockets[i].isOnControl = true;
+            }
+            game.ui.components.PopupOverlay.showHint("All alts controlled!");
+        }
+        this.getElement("Z15")[0].onclick = () => {
+            for (let i in sockets) {
+                sockets[i].isOnControl = false;
+                sockets[i].sendPacket(3, { up: 0, left: 0, down: 0, right: 0 });
+            }
+            game.ui.components.PopupOverlay.showHint("All alts uncontrolled!");
+        }
+        this.getElement("Z16")[0].onclick = () => {
+            script.scripts.xkey = !script.scripts.xkey;
+            script.scripts.xkey ? this.getElement("Z16")[0].innerText = "Disable X Key (Bomb)" : this.getElement("Z16")[0].innerText = "Enable X Key (Bomb)";
+        }
+        this.getElement("Z17")[0].onclick = () => {
+            script.scripts.xkeySpear = !script.scripts.xkeySpear;
+            script.scripts.xkeySpear ? this.getElement("Z17")[0].innerText = "Disable X Key (Spear)" : this.getElement("Z17")[0].innerText = "Enable X Key (Spear)";
+        }
+        this.getElement("Z19")[0].onclick = () => {
+            let tier = parseInt(this.getElement("Z18")[0].value) || 4;
+            if (tier < 1) tier = 1;
+            if (tier > 7) tier = 7;
+            for (let t = 1; t <= 7; t++) { window['autotier' + t + 'spear'] = false; }
+            window['autotier' + tier + 'spear'] = !window['autotier' + tier + 'spear'];
+            window['autotier' + tier + 'spear']
+                ? this.getElement("Z19")[0].innerText = "Disable Auto Spear (Tier " + tier + ")"
+                : this.getElement("Z19")[0].innerText = "Enable Auto Spear";
+        }
         user.connectedToId && user.sendMessage("getsettings");
         document.addEventListener('keydown', e => {
             if (document.activeElement.tagName.toLowerCase() !== "input" && document.activeElement.tagName.toLowerCase() !== "textarea") {
@@ -1284,10 +1330,12 @@ class Script {
                     case "Space":
                         if (script.scripts.socketMouseDown) {
                             Object.keys(sockets).forEach(ii => {
-                                setTimeout(() => {
-                                    sockets[ii].sendPacket(3, { space: 0 });
-                                    sockets[ii].sendPacket(3, { space: 1 });
-                                }, 100 * sockets[ii].hitDelay);
+                                if (sockets[ii].isOnControl) {
+                                    setTimeout(() => {
+                                        sockets[ii].sendPacket(3, { space: 0 });
+                                        sockets[ii].sendPacket(3, { space: 1 });
+                                    }, 100 * sockets[ii].hitDelay);
+                                }
                             })
                         }
                         user.connectedToId && user.sendMessage("space");
@@ -1353,25 +1401,25 @@ class Script {
                         break;
                     case "KeyW":
                         script.scripts.wasd && Object.keys(sockets).forEach(ii => {
-                            sockets[ii].sendPacket(3, { up: 1, down: 0 });
+                            sockets[ii].isOnControl && sockets[ii].sendPacket(3, { up: 1, down: 0 });
                         })
                         user.connectedToId && user.sendMessage("presskeyw");
                         break;
                     case "KeyD":
                         script.scripts.wasd && Object.keys(sockets).forEach(ii => {
-                            sockets[ii].sendPacket(3, { right: 1, left: 0 });
+                            sockets[ii].isOnControl && sockets[ii].sendPacket(3, { right: 1, left: 0 });
                         })
                         user.connectedToId && user.sendMessage("presskeyd");
                         break;
                     case "KeyS":
                         script.scripts.wasd && Object.keys(sockets).forEach(ii => {
-                            sockets[ii].sendPacket(3, { down: 1, up: 0 });
+                            sockets[ii].isOnControl && sockets[ii].sendPacket(3, { down: 1, up: 0 });
                         })
                         user.connectedToId && user.sendMessage("presskeys");
                         break;
                     case "KeyA":
                         script.scripts.wasd && Object.keys(sockets).forEach(ii => {
-                            sockets[ii].sendPacket(3, { left: 1, right: 0 });
+                            sockets[ii].isOnControl && sockets[ii].sendPacket(3, { left: 1, right: 0 });
                         })
                         user.connectedToId && user.sendMessage("presskeya");
                         break;
@@ -1383,22 +1431,22 @@ class Script {
                 switch (e.code) {
                     case "KeyW":
                         script.scripts.wasd && Object.keys(sockets).forEach(ii => {
-                            sockets[ii].sendPacket(3, { up: 0 });
+                            sockets[ii].isOnControl && sockets[ii].sendPacket(3, { up: 0 });
                         })
                         break;
                     case "KeyD":
                         script.scripts.wasd && Object.keys(sockets).forEach(ii => {
-                            sockets[ii].sendPacket(3, { right: 0 });
+                            sockets[ii].isOnControl && sockets[ii].sendPacket(3, { right: 0 });
                         })
                         break;
                     case "KeyS":
                         script.scripts.wasd && Object.keys(sockets).forEach(ii => {
-                            sockets[ii].sendPacket(3, { down: 0 });
+                            sockets[ii].isOnControl && sockets[ii].sendPacket(3, { down: 0 });
                         })
                         break;
                     case "KeyA":
                         script.scripts.wasd && Object.keys(sockets).forEach(ii => {
-                            sockets[ii].sendPacket(3, { left: 0 });
+                            sockets[ii].isOnControl && sockets[ii].sendPacket(3, { left: 0 });
                         })
                         break;
                 }
@@ -1408,7 +1456,7 @@ class Script {
             if (script.scripts.socketMouseDown) {
                 if (!e.button) {
                     Object.keys(sockets).forEach(ii => {
-                        sockets[ii].sendPacket(3, { mouseDown: sockets[ii].aimingYaw });
+                        sockets[ii].isOnControl && sockets[ii].sendPacket(3, { mouseDown: sockets[ii].aimingYaw });
                     })
                     user.connectedToId && user.sendMessage("mousedown");
                 }
@@ -1418,7 +1466,7 @@ class Script {
             if (script.scripts.socketMouseDown) {
                 if (!e.button) {
                     Object.keys(sockets).forEach(ii => {
-                        sockets[ii].sendPacket(3, { mouseUp: 1 });
+                        sockets[ii].isOnControl && sockets[ii].sendPacket(3, { mouseUp: 1 });
                     })
                     user.connectedToId && user.sendMessage("mouseup");
                 }
@@ -2027,7 +2075,7 @@ class Script {
                 tier = 7;
             }
             Object.keys(sockets).forEach(i => {
-                if (!sockets[i].mouseDownHit && sockets[i].myPlayer.gold < price && !sockets[i].inventory.Spear || (sockets[i].myPlayer.gold < price && sockets[i].inventory.Spear.tier < tier)) {
+                if ((!sockets[i].mouseDownHit && sockets[i].myPlayer.gold < price && !sockets[i].inventory.Spear) || (sockets[i].inventory.Spear && sockets[i].inventory.Spear.tier < tier)) {
                     sockets[i].join(game.ui.playerPartyShareKey);
                 } else {
                     sockets[i].leave();
@@ -3205,6 +3253,7 @@ class Alt {
         this.bot.mouse = {};
         this.bot.stashPs = {};
         this.bot.isLocked = false;
+        this.bot.isOnControl = true;
         this.bot.oldPsk = "";
         this.bot.lpa = false;
         this.bot.autoTimeout = false;
@@ -3551,6 +3600,18 @@ class Alt {
                 this.bot.myPlayer.gold >= 100 && this.bot.sendPacket(9, {name: "BuyItem", itemName: "Spear", tier: 1});
             } else {
                 this.bot.myPlayer.weaponName !== "Spear" && this.bot.sendPacket(9, {name: "EquipItem", itemName: "Spear", tier: this.bot.inventory.Spear.tier});
+            }
+        }
+        // Auto buy spear for alts
+        if (autotier1spear || autotier2spear || autotier3spear || autotier4spear || autotier5spear || autotier6spear || autotier7spear) {
+            let targetTier = autotier1spear ? 1 : autotier2spear ? 2 : autotier3spear ? 3 : autotier4spear ? 4 : autotier5spear ? 5 : autotier6spear ? 6 : 7;
+            if (!this.bot.inventory.Spear) {
+                this.bot.sendPacket(9, { name: "BuyItem", itemName: "Spear", tier: 1 });
+            } else if (this.bot.inventory.Spear.tier < targetTier) {
+                this.bot.sendPacket(9, { name: "BuyItem", itemName: "Spear", tier: this.bot.inventory.Spear.tier + 1 });
+            }
+            if (this.bot.inventory.Spear && this.bot.myPlayer.weaponName !== "Spear") {
+                this.bot.sendPacket(9, { name: "EquipItem", itemName: "Spear", tier: this.bot.inventory.Spear.tier });
             }
         }
         e.forEach(e1 => {
