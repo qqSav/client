@@ -3072,14 +3072,17 @@ game.network.sendRpc = (e) => {
             if (msg == prefix + "meleesave") {
                 window.savedMelees = Object.values(game.ui.buildings).filter(b => b.type === "MeleeTower");
                 game.ui.components.PopupOverlay.showHint("Saved " + window.savedMelees.length + " melee towers!");
+                user.connectedToId && user.sendMessage("savemelees");
             }
             if (msg == prefix + "meleetrick") {
                 window.meleeTrick = true;
                 game.ui.components.PopupOverlay.showHint("Melee Trick Enabled!");
+                user.connectedToId && user.sendMessage("emeleetrick");
             }
             if (msg == prefix + prefix + "meleetrick") {
                 window.meleeTrick = false;
                 game.ui.components.PopupOverlay.showHint("Melee Trick Disabled!");
+                user.connectedToId && user.sendMessage("dmeleetrick");
             }
             // Help command
             if (msg == prefix + "help") {

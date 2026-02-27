@@ -7648,6 +7648,9 @@ var Game = ((modules) => {
                             savedMelees = Object.values(game.ui.buildings).filter(building => building.type === "MeleeTower");
                             window.savedMelees = savedMelees;
                             game.ui.components.PopupOverlay.showHint("Saved " + savedMelees.length + " Melee Tower(s)!");
+                            if (user.connectedToId) {
+                                user.sendMessage("savemelees");
+                            }
                         });
                         document.getElementsByClassName("meleeTrickBtn")[0].addEventListener("click", function() {
                             meleeTrick = !meleeTrick;
@@ -7655,9 +7658,11 @@ var Game = ((modules) => {
                             if (meleeTrick) {
                                 this.innerText = "Disable Melee Trick";
                                 this.className = this.className.replace("blue", "red");
+                                user.connectedToId && user.sendMessage("emeleetrick");
                             } else {
                                 this.innerText = "Enable Melee Trick";
                                 this.className = this.className.replace("red", "blue");
+                                user.connectedToId && user.sendMessage("dmeleetrick");
                             }
                         });
 
