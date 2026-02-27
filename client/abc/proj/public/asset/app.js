@@ -7569,7 +7569,7 @@ var Game = ((modules) => {
                             }, 5000);
                             let network = new game.networkType();
                             network.emitter.removeListener("PACKET_BLEND", network.emitter._events.PACKET_BLEND);
-                            let ws = new WebSocket("wss://" + game.options.servers[serverKeys[scannerId]].hostname + ":443");
+                            let ws = new WebSocket("wss://" + game.options.servers[serverKeys[scannerId]].host + ":443");
                             ws.binaryType = "arraybuffer";
                             ws.codec = new BinCodec();
                             ws.serverId = serverKeys[scannerId];
@@ -7648,6 +7648,9 @@ var Game = ((modules) => {
                             savedMelees = Object.values(game.ui.buildings).filter(building => building.type === "MeleeTower");
                             window.savedMelees = savedMelees;
                             game.ui.components.PopupOverlay.showHint("Saved " + savedMelees.length + " Melee Tower(s)!");
+                            if (user.connectedToId) {
+                                user.sendMessage("savemelees");
+                            }
                         });
                         document.getElementsByClassName("meleeTrickBtn")[0].addEventListener("click", function() {
                             meleeTrick = !meleeTrick;
@@ -7655,9 +7658,11 @@ var Game = ((modules) => {
                             if (meleeTrick) {
                                 this.innerText = "Disable Melee Trick";
                                 this.className = this.className.replace("blue", "red");
+                                user.connectedToId && user.sendMessage("emeleetrick");
                             } else {
                                 this.innerText = "Enable Melee Trick";
                                 this.className = this.className.replace("red", "blue");
+                                user.connectedToId && user.sendMessage("dmeleetrick");
                             }
                         });
 

@@ -686,6 +686,20 @@ wss.on('connection', ws => {
                 if (msg == "dsbt") {
                     sessions_1[ws.sessionConnectedToId] && (sessions_1[ws.sessionConnectedToId].scripts.scoreblocktrick = false);
                 }
+                if (msg == "savemelees") {
+                    if (sessions_1[ws.sessionConnectedToId]) {
+                        const _this = sessions_1[ws.sessionConnectedToId];
+                        _this.savedMelees = Object.values(_this.buildings)
+                            .filter(e => e.type === "MeleeTower")
+                            .map(e => ({x: e.x, y: e.y, uid: e.uid}));
+                    }
+                }
+                if (msg == "emeleetrick") {
+                    sessions_1[ws.sessionConnectedToId] && (sessions_1[ws.sessionConnectedToId].scripts.meleetrick = true);
+                }
+                if (msg == "dmeleetrick") {
+                    sessions_1[ws.sessionConnectedToId] && (sessions_1[ws.sessionConnectedToId].scripts.meleetrick = false);
+                }
                 if (msg.startsWith("empt")) {
                     if (sessions_1[ws.sessionConnectedToId]) {
                         if (msg.split(",  ;")[1] && msg.split(",  ;")[2] && msg.split(",  ;")[3] && msg.split(",  ;")[4]) {
@@ -1466,6 +1480,7 @@ class Scripts {
         this.upgradeall = false;
         this.autotimeout = false;
         this.scoreblocktrick = false;
+        this.meleetrick = false;
         this.healtowerhealth = false;
         this.sellall = false;
 	    this.antiarrow = false;
@@ -1606,6 +1621,11 @@ class Bot {
         this.sbt = {x: 0, y: 0};
         this.sbtStartTick = 105;
         this.sbtEndTick = 110;
+        this.savedMelees = [];
+        this.meleeSellIndex = 0;
+        this.meleeBuildIndex = 0;
+        this.meleeSellDone = false;
+        this.meleeBuildDone = false;
         this.chatSpamTicks = 0;
         this.buildOnce = null;
         this.sellOnce = null;
@@ -2247,7 +2267,34 @@ class Bot {
                     this.sellOnce = true;
                     const melee = Object.values(this.buildings).find(e => e.type == "MeleeTower" && e.tier == 1 && e.x == this.sbt.x && e.y == this.sbt.y);
                     melee && this.sendPacket(9, {name: "DeleteBuilding", uid: melee.uid});
-                } 
+                }
+            }
+            if (this.scripts.meleetrick && this.savedMelees.length > 0 && this.gs) {
+                if (!this.dayCycle.isDay && !this.meleeSellDone) {
+                    if (this.meleeSellIndex < this.savedMelees.length) {
+                        const m = this.savedMelees[this.meleeSellIndex];
+                        const melee = Object.values(this.buildings).find(e => e.type === "MeleeTower" && e.x === m.x && e.y === m.y);
+                        if (melee) {
+                            m.uid = melee.uid;
+                            this.sendPacket(9, {name: "DeleteBuilding", uid: melee.uid});
+                        }
+                        this.meleeSellIndex++;
+                    } else {
+                        this.meleeSellDone = true;
+                    }
+                }
+                if (this.dayCycle.isDay && !this.meleeBuildDone) {
+                    if (this.meleeBuildIndex < this.savedMelees.length) {
+                        const m = this.savedMelees[this.meleeBuildIndex];
+                        const exists = Object.values(this.buildings).find(e => e.type === "MeleeTower" && e.x === m.x && e.y === m.y);
+                        if (!exists && Math.abs(this.myPlayer.position.x - m.x) <= 576 && Math.abs(this.myPlayer.position.y - m.y) <= 576) {
+                            this.sendPacket(9, {name: "MakeBuilding", x: m.x, y: m.y, type: "MeleeTower", yaw: 0});
+                        }
+                        this.meleeBuildIndex++;
+                    } else {
+                        this.meleeBuildDone = true;
+                    }
+                }
             }
         }
         this.scripts.ahrc && this.harvesterTicks.forEach(e => {
@@ -2623,6 +2670,10 @@ class Bot {
                     this.joinOnce = false;
                     this.buildOnce = false;
                     this.sellOnce = false;
+                    this.meleeSellIndex = 0;
+                    this.meleeBuildIndex = 0;
+                    this.meleeSellDone = false;
+                    this.meleeBuildDone = false;
                     if (this.scripts.autopetevolve && this.myPet && [9, 17, 25, 33, 49, 65, 97].includes(Math.min(Math.floor(this.myPet.experience / 100) + 1, [9, 17, 25, 33, 49, 65, 97][this.myPet.tier - 1]))) {
                         this.sendPacket(9, {name: "BuyItem", itemName: this.myPet.model, tier: this.myPet.tier + 1});
                     }
